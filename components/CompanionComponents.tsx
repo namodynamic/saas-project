@@ -164,7 +164,7 @@ const CompanionComponents = ({
           <button
             className="btn-mic"
             onClick={toggleMicrophone}
-            disabled={callStatus === CallStatus.ACTIVE}
+            disabled={callStatus !== CallStatus.ACTIVE}
           >
             <Image
               src={isMuted ? "/icons/mic-off.svg" : "/icons/mic-on.svg"}
