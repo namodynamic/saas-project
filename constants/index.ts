@@ -1,11 +1,26 @@
+import { Mic, Brain, BookOpen, Users, Zap, Star, Code, Calculator, Palette, Globe, TrendingUp, HandCoins, Earth, Binary } from "lucide-react";
+
+// export const subjects = [
+//   "maths",
+//   "language",
+//   "science",
+//   "history",
+//   "coding",
+//   "economics",
+// ];
+
 export const subjects = [
-  "maths",
-  "language",
-  "science",
-  "history",
-  "coding",
-  "economics",
-];
+  { value: "all", label: "All Subjects", icon: Globe },
+  { value: "programming", label: "Programming", icon: Binary },
+  { value: "maths", label: "Mathematics", icon: Calculator },
+  { value: "science", label: "Science", icon: BookOpen },
+  { value: "design", label: "Design", icon: Palette },
+  { value: "business", label: "Business", icon: TrendingUp },
+  { value: "history", label: "History", icon: Users },
+  { value: "economics", label: "Economics", icon: HandCoins },
+  { value: "coding", label: "Coding", icon: Code },
+  { value: "language", label: "Language", icon: Earth },
+]
 
 export const subjectsColors = {
   science: "#E5D0FF",
@@ -21,53 +36,48 @@ export const voices = {
   female: { casual: "ZIlrSGI4jZqobxRKprJz", formal: "sarah" },
 };
 
-export const recentSessions = [
+
+export const features = [
   {
-    id: "1",
-    subject: "science",
-    name: "Neura the Brainy Explorer",
-    topic: "Neural Network of the Brain",
-    duration: 45,
-    color: "#E5D0FF",
+    icon: Mic,
+    iconBg: "bg-blue-100",
+    iconColor: "text-blue-600",
+    title: "AI Voice Agents",
+    description: "Interactive voice tutoring sessions with AI agents specialized in your chosen topics",
   },
   {
-    id: "2",
-    subject: "maths",
-    name: "Countsy the Number Wizard",
-    topic: "Derivatives & Integrals",
-    duration: 30,
-    color: "#FFDA6E",
+    icon: Brain,
+    iconBg: "bg-purple-100",
+    iconColor: "text-purple-600",
+    title: "Custom Tutors",
+    description: "Create personalized AI tutors with specific subjects, topics, and conversation styles",
   },
   {
-    id: "3",
-    subject: "language",
-    name: "Verba the Vocabulary Builder",
-    topic: "English Literature",
-    duration: 30,
-    color: "#BDE7FF",
+    icon: BookOpen,
+    iconBg: "bg-green-100",
+    iconColor: "text-green-600",
+    title: "Session History",
+    description: "Track your learning progress with detailed session history and bookmarks",
   },
   {
-    id: "4",
-    subject: "coding",
-    name: "Codey the Logic Hacker",
-    topic: "Intro to If-Else Statements",
-    duration: 45,
-    color: "#FFC8E4",
+    icon: Users,
+    iconBg: "bg-orange-100",
+    iconColor: "text-orange-600",
+    title: "Community Tutors",
+    description: "Access a vast library of community-created tutors across various subjects",
   },
   {
-    id: "5",
-    subject: "history",
-    name: "Memo, the Memory Keeper",
-    topic: "World Wars: Causes & Consequences",
-    duration: 15,
-    color: "#FFECC8",
+    icon: Zap,
+    iconBg: "bg-red-100",
+    iconColor: "text-red-600",
+    title: "Real-time Learning",
+    description: "Instant feedback and adaptive learning paths powered by advanced AI",
   },
   {
-    id: "6",
-    subject: "economics",
-    name: "The Market Maestro",
-    topic: "The Basics of Supply & Demand",
-    duration: 10,
-    color: "#C8FFDF",
+    icon: Star,
+    iconBg: "bg-indigo-100",
+    iconColor: "text-indigo-600",
+    title: "Progress Tracking",
+    description: "Comprehensive analytics and insights to monitor your learning journey",
   },
 ];
