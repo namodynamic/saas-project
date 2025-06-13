@@ -9,7 +9,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import {
   Brain,
@@ -18,12 +17,12 @@ import {
   Search,
   Star,
   TrendingUp,
-  Play,
   Filter,
 } from "lucide-react";
 import Link from "next/link";
 import CompanionCard from "@/components/CompanionCard";
 import {
+  getBookmarkedCompanions,
   getUserCompanions,
   getUserSessions,
 } from "@/lib/actions/companion.actions";
@@ -31,6 +30,7 @@ import { getSubjectColor } from "@/lib/utils";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import RecentSessionsCard from "@/components/RecentSessionCard";
+import BookmarkedCompanionList from "@/components/BookmarkedCompanionList";
 
 const Dashboard = async () => {
   const user = await currentUser();
@@ -39,14 +39,14 @@ const Dashboard = async () => {
 
   const companions = await getUserCompanions(user.id);
   const sessionHistory = await getUserSessions(user.id);
+  const bookmarkedCompanions = await getBookmarkedCompanions(user.id);
 
   return (
     <main className="pt-16">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            Welcome back, Alex!
+            Welcome back, {user.firstName}!
           </h1>
           <p className="text-gray-600 mt-2">
             Continue your learning journey with AI tutors
@@ -152,7 +152,7 @@ const Dashboard = async () => {
           <TabsContent value="sessions" className="space-y-6">
             {sessionHistory.length === 0 ? (
               <div className="text-center text-gray-500">
-                No recent sessions found.
+                You have no recent sessions.
               </div>
             ) : (
               <RecentSessionsCard companions={sessionHistory} />
@@ -160,63 +160,13 @@ const Dashboard = async () => {
           </TabsContent>
 
           <TabsContent value="bookmarks" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Bookmarked Tutors</CardTitle>
-                <CardDescription>
-                  Your saved tutors for quick access
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {[
-                    {
-                      name: "React Advanced",
-                      subject: "Frontend",
-                      rating: 4.9,
-                    },
-                    {
-                      name: "Database Design",
-                      subject: "Backend",
-                      rating: 4.8,
-                    },
-                    { name: "Statistics Pro", subject: "Math", rating: 5.0 },
-                    { name: "UI/UX Designer", subject: "Design", rating: 4.7 },
-                  ].map((tutor, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <Avatar>
-                          <AvatarFallback>
-                            {tutor.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{tutor.name}</p>
-                          <p className="text-sm text-gray-600">
-                            {tutor.subject}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="flex items-center text-sm">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                          {tutor.rating}
-                        </div>
-                        <Button size="sm">
-                          <Play className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            {bookmarkedCompanions.length === 0 ? (
+              <div className="text-center text-gray-500">
+                You have no bookmarks yet.
+              </div>
+            ) : (
+              <BookmarkedCompanionList companions={bookmarkedCompanions} />
+            )}
           </TabsContent>
 
           <TabsContent value="progress" className="space-y-6">
