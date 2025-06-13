@@ -88,11 +88,22 @@ export const addToSessionHistory = async (companionId: string) => {
   const { data, error } = await supabase.from("session_history").insert({
     companion_id: companionId,
     user_id: userId,
-  });
+    started_at: new Date().toISOString(),
+  }).select().single();
 
   if (error) throw new Error(error.message);
 
   return data;
+};
+
+export const endSessionHistory = async (sessionId: string) => {
+  const supabase = createSupabaseClient();
+  const { error } = await supabase
+    .from("session_history")
+    .update({ ended_at: new Date().toISOString() })
+    .eq("id", sessionId);
+
+  if (error) throw new Error(error.message);
 };
 
 export const getRecentSessions = async (limit = 10) => {
@@ -129,14 +140,19 @@ export const getUserSessions = async (userId: string, limit = 10) => {
   const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from("session_history")
-    .select(`companions:companion_id (*)`)
+    .select(`id, started_at, ended_at, companions:companion_id (*)`)
     .eq("user_id", userId)
-    .order("created_at", { ascending: false })
+    .order("started_at", { ascending: true })
     .limit(limit);
 
   if (error) throw new Error(error.message);
 
-  return data.map(({ companions }) => companions);
+  return data.map(({ id, started_at, ended_at, companions }) => ({
+    sessionId: id,
+    started_at,
+    ended_at,
+    ...(Array.isArray(companions) ? companions[0] : companions),
+  }));
 };
 
 export const newCompanionPermissions = async () => {
