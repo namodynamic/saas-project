@@ -1,14 +1,5 @@
 import { Mic, Brain, BookOpen, Users, Zap, Star, Code, Calculator, Palette, Globe, TrendingUp, HandCoins, Earth, Binary } from "lucide-react";
 
-// export const subjects = [
-//   "maths",
-//   "language",
-//   "science",
-//   "history",
-//   "coding",
-//   "economics",
-// ];
-
 export const subjects = [
   { value: "all", label: "All Subjects", icon: Globe },
   { value: "programming", label: "Programming", icon: Binary },
@@ -29,6 +20,9 @@ export const subjectsColors = {
   coding: "#FFC8E4",
   history: "#FFECC8",
   economics: "#C8FFDF",
+  business: "#FFC8E4",
+  design: "#FFC8E4",
+  programming: "#FFC8E4",
 };
 
 export const voices = {

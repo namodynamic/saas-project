@@ -136,7 +136,7 @@ export const getUserCompanions = async (userId: string) => {
   return data;
 };
 
-export const getUserSessions = async (userId: string, limit = 10) => {
+export const getUserSessions = async (userId: string, limit = 1000) => {
   const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from("session_history")

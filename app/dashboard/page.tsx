@@ -1,15 +1,6 @@
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
 import {
   Brain,
   Clock,
@@ -31,6 +22,9 @@ import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import RecentSessionsCard from "@/components/RecentSessionCard";
 import BookmarkedCompanionList from "@/components/BookmarkedCompanionList";
+import ProgressTracker from "@/components/ProgressTracker";
+import QuickStats from "@/components/QuickStats";
+import { differenceInSeconds } from "date-fns";
 
 const Dashboard = async () => {
   const user = await currentUser();
@@ -38,8 +32,174 @@ const Dashboard = async () => {
   if (!user) redirect("/sign-in");
 
   const companions = await getUserCompanions(user.id);
-  const sessionHistory = await getUserSessions(user.id);
+  const recentSessions = await getUserSessions(user.id, 10);
   const bookmarkedCompanions = await getBookmarkedCompanions(user.id);
+
+  const allSessions = await getUserSessions(user.id);
+
+  const subjectCounts: Record<string, number> = {};
+  allSessions.forEach((s) => {
+    if (s.subject)
+      subjectCounts[s.subject] = (subjectCounts[s.subject] || 0) + 1;
+  });
+  const totalSessions = allSessions.length;
+  const subjects = Object.entries(subjectCounts).map(([subject, count]) => ({
+    subject,
+    percent: totalSessions ? Math.round((count / totalSessions) * 100) : 0,
+  }));
+
+  const now = new Date();
+  const oneWeekAgo = new Date(now);
+  oneWeekAgo.setDate(now.getDate() - 7);
+  const twoWeeksAgo = new Date(now);
+  twoWeeksAgo.setDate(now.getDate() - 14);
+
+  const sessionsThisWeek = allSessions.filter((s) => {
+    const date = new Date(s.started_at || s.created_at);
+    return date >= oneWeekAgo && date <= now;
+  });
+
+  const sessionsLastWeek = allSessions.filter((s) => {
+    const date = new Date(s.started_at || s.created_at);
+    return date >= twoWeeksAgo && date < oneWeekAgo;
+  });
+
+  const totalSessionsThisWeek = sessionsThisWeek.length;
+  const totalSessionsLastWeek = sessionsLastWeek.length;
+
+  const totalSecondsThisWeek = sessionsThisWeek.reduce((sum, s) => {
+    if (s.started_at && s.ended_at) {
+      return (
+        sum + differenceInSeconds(new Date(s.ended_at), new Date(s.started_at))
+      );
+    }
+    return sum;
+  }, 0);
+
+  const totalSecondsLastWeek = sessionsLastWeek.reduce((sum, s) => {
+    if (s.started_at && s.ended_at) {
+      return (
+        sum + differenceInSeconds(new Date(s.ended_at), new Date(s.started_at))
+      );
+    }
+    return sum;
+  }, 0);
+
+  const hoursThisWeek = totalSecondsThisWeek / 3600;
+  const hoursLastWeek = totalSecondsLastWeek / 3600;
+
+  const sessionDiff = totalSessionsThisWeek - totalSessionsLastWeek;
+  const hoursDiff = hoursThisWeek - hoursLastWeek;
+
+  const formattedHoursThisWeek =
+    hoursThisWeek >= 1
+      ? `${Math.floor(hoursThisWeek)}h ${Math.round((hoursThisWeek % 1) * 60)}m`
+      : `${Math.round(hoursThisWeek * 60)}m`;
+
+  const formattedHoursDiff =
+    hoursDiff >= 0
+      ? `+${hoursDiff.toFixed(1)} from last week`
+      : `${hoursDiff.toFixed(1)} from last week`;
+
+  const formattedSessionDiff =
+    sessionDiff >= 0
+      ? `+${sessionDiff} from last week`
+      : `${sessionDiff} from last week`;
+
+  const uniqueTutors = new Set(allSessions.map((s) => s.companion_id)).size;
+
+  function calculateStreak(
+    allSessions: { started_at?: string; created_at?: string }[]
+  ): number {
+    const dates = Array.from(
+      new Set(
+        allSessions
+          .map((s) =>
+            s.started_at
+              ? new Date(s.started_at).toISOString().slice(0, 10)
+              : null
+          )
+          .filter(Boolean)
+      )
+    )
+      .filter((date) => date !== null)
+      .sort((a, b) => ((a ?? "") > (b ?? "") ? -1 : 1));
+
+    if (dates.length === 0) return 0;
+
+    let streak = 1;
+    let prev = dates[0] ? new Date(dates[0]) : null;
+
+    for (let i = 1; i < dates.length; i++) {
+      const curr = dates[i]?.length ? new Date(dates[i]) : null;
+      if (!curr || !prev) break;
+      const diff = (prev.getTime() - curr.getTime()) / (1000 * 60 * 60 * 24);
+
+      if (diff === 1) {
+        streak++;
+        prev = curr;
+      } else if (diff > 1) {
+        break;
+      }
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    if (dates[0] !== today) streak = 0;
+
+    return streak;
+  }
+
+  const streakDays = calculateStreak(allSessions);
+
+  const goals = [
+    {
+      label: "Complete 10 sessions",
+      value: `${sessionsThisWeek.length}/10`,
+      completed: sessionsThisWeek.length >= 10,
+    },
+    {
+      label: "Study 10 hours",
+      value: `${formattedHoursThisWeek}/10h`,
+      completed: hoursThisWeek >= 36000,
+    },
+    {
+      label: "Try 2 new tutors",
+      value: `${uniqueTutors}/2`,
+      completed: uniqueTutors >= 2,
+    },
+    {
+      label: "Maintain streak",
+      value: streakDays === 1 ? "1 day" : `${streakDays} days`,
+      completed: streakDays >= 7,
+    },
+  ];
+
+  const stats = [
+    {
+      label: "Total Sessions",
+      value: totalSessions,
+      icon: <Clock className="h-4 w-4 text-muted-foreground" />,
+      subtext: formattedSessionDiff,
+    },
+    {
+      label: "Learning Hours",
+      value: formattedHoursThisWeek,
+      icon: <TrendingUp className="h-4 w-4 text-muted-foreground" />,
+      subtext: formattedHoursDiff,
+    },
+    {
+      label: "Active Tutors",
+      value: recentSessions.length,
+      icon: <Brain className="h-4 w-4 text-muted-foreground" />,
+      subtext: `Across ${subjects.length} subjects`,
+    },
+    {
+      label: "Streak",
+      value: streakDays === 1 ? "1 day" : `${streakDays} days`,
+      icon: <Star className="h-4 w-4 text-muted-foreground" />,
+      subtext: "Keep it up!",
+    },
+  ];
 
   return (
     <main className="pt-16">
@@ -53,70 +213,21 @@ const Dashboard = async () => {
           </p>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Sessions
-              </CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">24</div>
-              <p className="text-xs text-muted-foreground">+3 from last week</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Learning Hours
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">12.5</div>
-              <p className="text-xs text-muted-foreground">
-                +2.1 from last week
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Active Tutors
-              </CardTitle>
-              <Brain className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">8</div>
-              <p className="text-xs text-muted-foreground">Across 5 subjects</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Streak</CardTitle>
-              <Star className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">7 days</div>
-              <p className="text-xs text-muted-foreground">Keep it up!</p>
-            </CardContent>
-          </Card>
-        </div>
+        <QuickStats stats={stats} />
 
         <Tabs defaultValue="tutors" className="space-y-6">
-          <TabsList className="flex w-full flex-wrap">
+          <TabsList className="grid w-full grid-cols-4 max-md:grid-cols-2 gap-5 mb-10">
             <TabsTrigger value="tutors">My Companions</TabsTrigger>
             <TabsTrigger value="sessions">Recent Sessions</TabsTrigger>
-            <TabsTrigger value="bookmarks">Bookmarks</TabsTrigger>
-            <TabsTrigger value="progress">Progress</TabsTrigger>
+            <TabsTrigger className="bg-muted h-8" value="bookmarks">
+              Bookmarks
+            </TabsTrigger>
+            <TabsTrigger className="bg-muted h-8" value="progress">
+              Progress
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="tutors" className="space-y-6">
+          <TabsContent value="tutors" className="space-y-6 pt-5">
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
               <div className="flex-1 max-w-md">
                 <div className="relative">
@@ -149,17 +260,17 @@ const Dashboard = async () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="sessions" className="space-y-6">
-            {sessionHistory.length === 0 ? (
+          <TabsContent value="sessions" className="space-y-6 pt-5">
+            {recentSessions.length === 0 ? (
               <div className="text-center text-gray-500">
                 You have no recent sessions.
               </div>
             ) : (
-              <RecentSessionsCard companions={sessionHistory} />
+              <RecentSessionsCard companions={recentSessions} />
             )}
           </TabsContent>
 
-          <TabsContent value="bookmarks" className="space-y-6">
+          <TabsContent value="bookmarks" className="space-y-6 pt-5">
             {bookmarkedCompanions.length === 0 ? (
               <div className="text-center text-gray-500">
                 You have no bookmarks yet.
@@ -169,76 +280,8 @@ const Dashboard = async () => {
             )}
           </TabsContent>
 
-          <TabsContent value="progress" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Learning Progress</CardTitle>
-                  <CardDescription>
-                    Your progress across different subjects
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>JavaScript</span>
-                      <span>85%</span>
-                    </div>
-                    <Progress value={85} />
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>Python</span>
-                      <span>72%</span>
-                    </div>
-                    <Progress value={72} />
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>Mathematics</span>
-                      <span>68%</span>
-                    </div>
-                    <Progress value={68} />
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>React</span>
-                      <span>91%</span>
-                    </div>
-                    <Progress value={91} />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Weekly Goals</CardTitle>
-                  <CardDescription>
-                    Track your learning objectives
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Complete 5 sessions</span>
-                    <Badge variant="secondary">3/5</Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Study 10 hours</span>
-                    <Badge variant="secondary">7.5/10</Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Try 2 new tutors</span>
-                    <Badge className="bg-green-100 text-green-800">2/2 ✓</Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Maintain streak</span>
-                    <Badge className="bg-green-100 text-green-800">
-                      7 days ✓
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+          <TabsContent value="progress" className="space-y-6 pt-5">
+            <ProgressTracker subjects={subjects} goals={goals} />
           </TabsContent>
         </Tabs>
       </div>
