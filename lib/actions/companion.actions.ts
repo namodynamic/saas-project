@@ -263,6 +263,19 @@ export const removeBookmark = async (companionId: string, path: string) => {
   return data;
 };
 
+export const isBookmarked = async (companionId: string, userId: string) => {
+  const supabase = createSupabaseClient();
+  const { data, error } = await supabase
+    .from("bookmarks")
+    .select("id")
+    .eq("companion_id", companionId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return !!data;
+};
+
 export const getBookmarkedCompanions = async (userId: string) => {
   const supabase = createSupabaseClient();
   const { data, error } = await supabase

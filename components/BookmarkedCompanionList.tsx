@@ -9,6 +9,7 @@ import { getSubjectColor } from "@/lib/utils";
 import { Clock, Play } from "lucide-react";
 import Image from "next/image";
 import { Button } from "./ui/button";
+import Link from "next/link";
 
 interface CompanionListProps {
   companions?: Companion[];
@@ -51,9 +52,11 @@ const BookmarkedCompanionList = ({ companions }: CompanionListProps) => {
                   <Clock className="h-4 w-4 mr-1 " />
                   {duration}
                 </div>
+                <Link href={`/dashboard/session/${id}`}>
                 <Button size="sm">
                   <Play className="h-4 w-4" />
                 </Button>
+                </Link>
               </div>
             </div>
           ))}

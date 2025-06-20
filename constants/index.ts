@@ -1,7 +1,7 @@
 import { Mic, Brain, BookOpen, Users, Zap, Star, Code, Calculator, Palette, Globe, TrendingUp, HandCoins, Earth, Binary } from "lucide-react";
 
 export const subjects = [
-  { value: "all", label: "All Subjects", icon: Globe },
+  { value: "general", label: "All Subjects", icon: Globe },
   { value: "programming", label: "Programming", icon: Binary },
   { value: "maths", label: "Mathematics", icon: Calculator },
   { value: "science", label: "Science", icon: BookOpen },
@@ -23,6 +23,7 @@ export const subjectsColors = {
   business: "#FFC8E4",
   design: "#FFC8E4",
   programming: "#FFC8E4",
+  general: "#E7E5E5",
 };
 
 export const voices = {
@@ -75,3 +76,19 @@ export const features = [
     description: "Comprehensive analytics and insights to monitor your learning journey",
   },
 ];
+
+export const TEACHING_STYLES = [
+  { value: "formal", label: "Formal" },
+  { value: "casual", label: "Casual" },
+] as const
+
+export const VOICE_TYPES = [
+  { value: "male", label: "Male" },
+  { value: "female", label: "Female" },
+] as const
+
+export const SPEAKING_SPEEDS = [
+  { value: "slow", label: "Slow" },
+  { value: "normal", label: "Normal" },
+  { value: "fast", label: "Fast" },
+] as const

@@ -89,7 +89,7 @@ const CompanionCard = ({
         <div className="flex gap-2">
           <Button size="sm" className="flex-1">
             <Link
-              href={`/companions/${id}`}
+              href={`/dashboard/session/${id}`}
               className="inline-flex items-center"
             >
               <Mic className="h-4 w-4 mr-2" />

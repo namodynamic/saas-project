@@ -242,8 +242,8 @@ const Dashboard = async () => {
                 </Button>
                 <Button asChild>
                   <Link href="/dashboard/create-companion">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Tutor
+                    <Plus className="h-4 w-4 mr-1" />
+                    Create Companion
                   </Link>
                 </Button>
               </div>

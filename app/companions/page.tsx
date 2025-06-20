@@ -110,7 +110,7 @@ const CompanionsPage = async ({ searchParams }: SearchParams) => {
           </p>
           <div className="mt-8">
             <Button size="lg" className="px-8 py-3" asChild>
-              <Link href="/dashboard/create-tutor">Create Custom Tutor</Link>
+              <Link href="/dashboard/create-companion">Create Custom Tutor</Link>
             </Button>
           </div>
         </div>

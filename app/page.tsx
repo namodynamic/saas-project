@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PricingTable } from "@clerk/nextjs";
 import FeatureCards from "@/components/FeatureCard";
 import { features } from "@/constants";
+import { Sparkles } from "lucide-react";
 
 export default function LandingPage() {
   return (
@@ -13,7 +14,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-7xl">
           <div className="text-center">
             <Badge variant="secondary" className="mb-4 px-4 py-2">
-              🚀 AI-Powered Learning Platform
+              <Sparkles className="mr-1 h-5 w-5" /> AI-Powered Learning Platform
             </Badge>
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl lg:text-7xl">
               Learn with{" "}
