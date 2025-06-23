@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cn, configureAssistant, getSubjectColor } from "@/lib/utils";
 import { vapi } from "@/lib/vapi.sdk";
-import { addToSessionHistory } from "@/lib/actions/companion.actions";
+import { addToSessionHistory, endSessionHistory } from "@/lib/actions/companion.actions";
 import Image from "next/image";
 import Lottie, { LottieRefCurrentProps } from "lottie-react";
 import soundwaves from "@/constants/soundwaves.json";
@@ -29,8 +29,20 @@ const CompanionComponents = ({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [messages, setMessages] = useState<SavedMessage[]>([]);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const lottieRef = useRef<LottieRefCurrentProps>(null);
+
+  const handleSessionStart = async () => {
+  const session = await addToSessionHistory(companionId);
+  setSessionId(session.id);
+};
+
+const handleSessionEnd = async () => {
+  if (sessionId) {
+    await endSessionHistory(sessionId);
+  }
+};
 
   useEffect(() => {
     if (lottieRef) {
@@ -43,11 +55,14 @@ const CompanionComponents = ({
   }, [isSpeaking, lottieRef]);
 
   useEffect(() => {
-    const onCallStart = () => setCallStatus(CallStatus.ACTIVE);
+    const onCallStart = () => {
+      setCallStatus(CallStatus.ACTIVE)
+      handleSessionStart();
+    };
 
     const onCallEnd = () => {
       setCallStatus(CallStatus.FINISHED);
-      addToSessionHistory(companionId);
+      handleSessionEnd();
     };
 
     const onMessage = (message: Message) => {
@@ -101,6 +116,7 @@ const CompanionComponents = ({
   const handleDisconnect = () => {
     setCallStatus(CallStatus.FINISHED);
     vapi.stop();
+    handleSessionEnd()
   };
 
   return (

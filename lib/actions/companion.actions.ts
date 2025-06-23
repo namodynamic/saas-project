@@ -88,11 +88,22 @@ export const addToSessionHistory = async (companionId: string) => {
   const { data, error } = await supabase.from("session_history").insert({
     companion_id: companionId,
     user_id: userId,
-  });
+    started_at: new Date().toISOString(),
+  }).select().single();
 
   if (error) throw new Error(error.message);
 
   return data;
+};
+
+export const endSessionHistory = async (sessionId: string) => {
+  const supabase = createSupabaseClient();
+  const { error } = await supabase
+    .from("session_history")
+    .update({ ended_at: new Date().toISOString() })
+    .eq("id", sessionId);
+
+  if (error) throw new Error(error.message);
 };
 
 export const getRecentSessions = async (limit = 10) => {
@@ -125,18 +136,23 @@ export const getUserCompanions = async (userId: string) => {
   return data;
 };
 
-export const getUserSessions = async (userId: string, limit = 10) => {
+export const getUserSessions = async (userId: string, limit = 1000) => {
   const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from("session_history")
-    .select(`companions:companion_id (*)`)
+    .select(`id, started_at, ended_at, companions:companion_id (*)`)
     .eq("user_id", userId)
-    .order("created_at", { ascending: false })
+    .order("started_at", { ascending: true })
     .limit(limit);
 
   if (error) throw new Error(error.message);
 
-  return data.map(({ companions }) => companions);
+  return data.map(({ id, started_at, ended_at, companions }) => ({
+    sessionId: id,
+    started_at,
+    ended_at,
+    ...(Array.isArray(companions) ? companions[0] : companions),
+  }));
 };
 
 export const newCompanionPermissions = async () => {
@@ -167,6 +183,51 @@ export const newCompanionPermissions = async () => {
   } else {
     return true;
   }
+};
+
+export const getSessionCountForCompanion = async (companionId: string) => {
+  const supabase = createSupabaseClient();
+  const { count, error } = await supabase
+    .from("session_history")
+    .select("*", { count: "exact", head: true })
+    .eq("companion_id", companionId);
+
+  if (error) throw new Error(error.message);
+  return count || 0;
+};
+
+export const getFeaturedCompanions = async (limit = 3) => {
+  const supabase = createSupabaseClient();
+  // Get all session_history rows (or a high limit)
+  const { data: sessions, error } = await supabase
+    .from("session_history")
+    .select("companion_id");
+
+  if (error) throw new Error(error.message);
+  // Count sessions per companion_id
+  const counts: Record<string, number> = {};
+  sessions.forEach(({ companion_id }) => {
+    counts[companion_id] = (counts[companion_id] || 0) + 1;
+  });
+  // Get top N companion_ids
+  const topCompanionIds = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([id]) => id);
+
+  if (topCompanionIds.length === 0) return [];
+  // Fetch companion details
+  const { data: companions, error: companionsError } = await supabase
+    .from("companions")
+    .select("*")
+    .in("id", topCompanionIds);
+
+  if (companionsError) throw new Error(companionsError.message);
+  // Attach sessionCount to each companion
+  return companions.map((companion) => ({
+    ...companion,
+    sessionCount: counts[companion.id] || 0,
+  }));
 };
 
 // Bookmarks
@@ -200,6 +261,19 @@ export const removeBookmark = async (companionId: string, path: string) => {
   }
   revalidatePath(path);
   return data;
+};
+
+export const isBookmarked = async (companionId: string, userId: string) => {
+  const supabase = createSupabaseClient();
+  const { data, error } = await supabase
+    .from("bookmarks")
+    .select("id")
+    .eq("companion_id", companionId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return !!data;
 };
 
 export const getBookmarkedCompanions = async (userId: string) => {

@@ -12,6 +12,7 @@ import { subjects } from "@/constants";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { formUrlQuery, removeKeysFromUrlQuery } from "@jsmastery/utils";
+import { MdSubject } from "react-icons/md";
 
 const SubjectFilter = () => {
   const router = useRouter();
@@ -40,13 +41,23 @@ const SubjectFilter = () => {
   return (
     <Select onValueChange={setSubject} value={subject}>
       <SelectTrigger className="input capitalize">
-        <SelectValue placeholder="Subject" />
+        <div className="flex items-center">
+          <MdSubject className="h-4 w-4 mr-2" />
+          <SelectValue placeholder="Subject" />
+        </div>
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="all">All subjects</SelectItem>
         {subjects.map((subject) => (
-          <SelectItem key={subject} value={subject} className="capitalize">
-            {subject}
+          <SelectItem
+            key={subject.value}
+            value={subject.value}
+            className="capitalize"
+          >
+            <div className="flex items-center">
+              <subject.icon className="h-4 w-4 mr-2" />
+
+              {subject.label}
+            </div>
           </SelectItem>
         ))}
       </SelectContent>
