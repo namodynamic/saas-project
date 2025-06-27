@@ -1,10 +1,13 @@
 "use client";
 
-import { addBookmark, getSessionCountForCompanion, removeBookmark } from "@/lib/actions/companion.actions";
+import {
+  addBookmark,
+  getSessionCountForCompanion,
+  removeBookmark,
+} from "@/lib/actions/companion.actions";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Card,
   CardContent,
@@ -13,9 +16,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "./ui/badge";
-import { Clock, Mic, Star } from "lucide-react";
+import { Clock, Mic, History } from "lucide-react";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
+import { getSubjectColor } from "@/lib/utils";
 
 interface CompanionCardProps {
   id: string;
@@ -57,11 +61,16 @@ const CompanionCard = ({
     >
       <CardHeader>
         <div className="flex justify-between items-center">
-          <div className="flex items-center justify-between">
-            <Avatar className="h-12 w-12">
-              <AvatarImage src="/placeholder.svg?height=48&width=48" />
-              <AvatarFallback>JS</AvatarFallback>
-            </Avatar>
+          <div
+            className="size-[72px] flex items-center justify-center rounded-lg max-md:hidden"
+            style={{ backgroundColor: getSubjectColor(subject) }}
+          >
+            <Image
+              src={`/icons/${subject}.svg`}
+              alt={subject}
+              width={30}
+              height={30}
+            />
           </div>
           <Badge
             variant="secondary"
@@ -79,11 +88,11 @@ const CompanionCard = ({
       <CardContent>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center text-sm text-black">
-            <Clock className="h-4 w-4 mr-1" /> {sessionCount} sessions
+            <History className="h-4 w-4 mr-1" /> {sessionCount} sessions
           </div>
           <div className="flex items-center text-sm text-black">
-            <Star className="h-4 w-4 mr-1 fill-black text-black" />
-            4.9
+            <Clock className="h-4 w-4 mr-1" />
+            {duration} min
           </div>
         </div>
         <div className="flex gap-2">
