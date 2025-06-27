@@ -77,6 +77,31 @@ export const features = [
   },
 ];
 
+export const testimonials = [
+    {
+      name: "Sarah Chen",
+      role: "Computer Science Student",
+      content: "Converso helped me master React in just 2 weeks. The personalized tutoring is incredible!",
+      avatar: "/images/avatar.png",
+      rating: 5,
+    },
+    {
+      name: "Michael Rodriguez",
+      role: "Software Engineer",
+      content: "The AI tutors adapt to my learning pace perfectly. Best investment in my career growth.",
+      avatar: "/images/avatar2.png",
+      rating: 5,
+    },
+    {
+      name: "Emily Johnson",
+      role: "Data Scientist",
+      content: "From Python basics to machine learning - Converso made complex topics feel simple.",
+      avatar: "/images/avatar.png",
+      rating: 5,
+    },
+  ]
+
+
 export const TEACHING_STYLES = [
   { value: "formal", label: "Formal" },
   { value: "casual", label: "Casual" },

@@ -1,16 +1,16 @@
 import Link from "next/link"
-import { BookOpen } from "lucide-react"
+import { GraduationCap } from "lucide-react"
 import { FaSquareXTwitter, FaSquareGithub, FaLinkedin } from "react-icons/fa6";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-white">
+    <footer className="bg-black text-white">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500">
-                <BookOpen className="h-5 w-5 text-white" />
+                <GraduationCap className="h-5 w-5 text-white" />
               </div>
               <span className="text-xl font-bold">Converso</span>
             </div>
