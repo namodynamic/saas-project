@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
 import { PricingTable } from "@clerk/nextjs"
+import CTA from "@/components/CTA"
+import { Mic, HandCoins } from "lucide-react"
 
 export default function PricingPage() {
   return (
@@ -9,9 +9,9 @@ export default function PricingPage() {
 
       <section className="relative px-4 pt-20 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="text-center">
+          <div className="text-center mt-10">
             <Badge variant="secondary" className="mb-4 px-4 py-2">
-              💰 Simple, Transparent Pricing
+              <HandCoins className="mr-1" /> Simple, Transparent Pricing
             </Badge>
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
               Choose Your{" "}
@@ -70,27 +70,31 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="px-4 py-16 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-600 to-purple-600">
-        <div className="mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl font-bold text-white sm:text-4xl">Ready to Start Learning?</h2>
-          <p className="mt-4 text-xl text-blue-100">
-            Join thousands of learners already using Converso to learn with AI.
-          </p>
-          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary" className="px-8 py-3" asChild>
-              <Link href="/sign-up">Start Free Today</Link>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="px-8 py-3 text-black border-white hover:bg-white hover:text-blue-600"
-              asChild
-            >
-              <Link href="/contact">Contact Sales</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+      <CTA
+        badge="Start Learning Your Way"
+        title="Ready to Start Learning?"
+        description="Join thousands of learners already using Converso to learn with AI."
+        image={{
+          src: "/images/limit.svg",
+          alt: "...",
+          width: 400,
+          height: 300,
+        }}
+        buttons={[
+          {
+            text: "Start Free Today",
+            href: "/dashboard",
+            variant: "outline",
+            icon: <Mic />,
+          },
+          {
+            text: "Contact Sales",
+            href: "/contact",
+            variant: "primary",
+          },
+        ]}
+        variant="gradient"
+      />
 
     </div>
   )
